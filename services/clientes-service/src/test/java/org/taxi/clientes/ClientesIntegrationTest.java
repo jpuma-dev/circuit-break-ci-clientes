@@ -14,10 +14,11 @@ class ClientesIntegrationTest {
     @BeforeEach void reset() { jpa.deleteAll(); }
     static final String BODY="{\"nombre\":\"Prueba\",\"dni\":\"12345678\",\"telefono\":\"999888777\",\"email\":\"test@example.com\"}";
     @Test void listadoVacioDevuelve200YArregloVacio() throws Exception {
+        // CI: una base vacía debe devolver [], sin registros ficticios.
         mvc.perform(get("/api/clientes"))
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith("application/json"))
-            .andExpect(content().json("[{}]"));
+            .andExpect(content().json("[]"));
     }
     @Test void listadoDevuelveLosClientesPersistidosConSusDatos() throws Exception {
         mvc.perform(post("/api/clientes").contentType("application/json").content(BODY))
