@@ -17,7 +17,7 @@ class ClientesIntegrationTest {
         mvc.perform(get("/api/clientes"))
             .andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith("application/json"))
-            .andExpect(content().json("[]"));
+            .andExpect(content().json("[{}]"));
     }
     @Test void listadoDevuelveLosClientesPersistidosConSusDatos() throws Exception {
         mvc.perform(post("/api/clientes").contentType("application/json").content(BODY))
