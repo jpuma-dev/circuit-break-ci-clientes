@@ -1,0 +1,8 @@
+**/target/
+.idea/
+*.log
+.run/
+
+**/data/
+*.mv.db
+*.trace.db

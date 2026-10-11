@@ -1,0 +1,13 @@
+**/target
+**/.git
+**/.idea
+**/.settings
+**/.classpath
+**/.project
+**/.factorypath
+**/*.log
+.run
+
+**/data
+**/*.mv.db
+**/*.trace.db

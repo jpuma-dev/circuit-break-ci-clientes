@@ -1,0 +1,59 @@
+name: Reusable Java CI
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        required: true
+        type: string
+      service_path:
+        required: true
+        type: string
+      java_version:
+        required: false
+        type: string
+        default: '21'
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Compilar, probar y validar ${{ inputs.service_name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Configurar Java 21 y cache Maven
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ inputs.java_version }}
+          cache: maven
+          cache-dependency-path: ${{ inputs.service_path }}/pom.xml
+      - name: Configurar Maven Wrapper
+        run: sh ./mvnw --version
+      - name: Compilar clientes
+        run: sh ./mvnw -B -ntp -f ${{ inputs.service_path }}/pom.xml clean compile
+      - name: Ejecutar pruebas de clientes y listado
+        run: sh ./mvnw -B -ntp -f ${{ inputs.service_path }}/pom.xml -DfailIfNoTests=true test
+      - name: Validar y empaquetar clientes
+        run: sh ./mvnw -B -ntp -f ${{ inputs.service_path }}/pom.xml -DfailIfNoTests=true verify
+      - name: Guardar resultados de pruebas
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.service_name }}-resultados-pruebas
+          path: ${{ inputs.service_path }}/target/surefire-reports/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Guardar JAR validado
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.service_name }}-jar
+          path: ${{ inputs.service_path }}/target/*.jar
+          if-no-files-found: error
+          retention-days: 14

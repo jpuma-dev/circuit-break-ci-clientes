@@ -1,0 +1,141 @@
+name: taxi-seguro
+
+x-app: &app
+  init: true
+  restart: unless-stopped
+  mem_limit: 512m
+  healthcheck:
+    test: ["CMD-SHELL", "curl -fsS http://localhost:$$SERVER_PORT/actuator/health > /dev/null || exit 1"]
+    interval: 10s
+    timeout: 5s
+    retries: 18
+    start_period: 45s
+
+x-entorno: &entorno
+  EUREKA_URL: http://eureka-server:8761/eureka/
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_USER: taxi
+  RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-taxi_local}
+
+services:
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    hostname: rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: taxi
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-taxi_local}
+    ports:
+      - "127.0.0.1:${RABBIT_UI_PORT:-15672}:15672"
+    volumes:
+      - rabbit-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+  eureka-server:
+    <<: *app
+    build:
+      context: .
+      args:
+        MODULE: eureka-server
+    environment:
+      <<: *entorno
+      SERVER_PORT: 8761
+    ports:
+      - "127.0.0.1:${EUREKA_PORT:-8761}:8761"
+  api-gateway:
+    <<: *app
+    build:
+      context: .
+      args:
+        MODULE: api-gateway
+    environment:
+      <<: *entorno
+      SERVER_PORT: 8080
+    ports:
+      - "127.0.0.1:${GATEWAY_PORT:-8080}:8080"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      clientes-service:
+        condition: service_healthy
+      taxis-service:
+        condition: service_healthy
+      viajes-service:
+        condition: service_healthy
+      notificaciones-service:
+        condition: service_healthy
+  clientes-service:
+    <<: *app
+    build:
+      context: .
+      args:
+        MODULE: clientes-service
+    environment:
+      <<: *entorno
+      SERVER_PORT: 8081
+    volumes:
+      - clientes-data:/app/data
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+  taxis-service:
+    <<: *app
+    build:
+      context: .
+      args:
+        MODULE: taxis-service
+    environment:
+      <<: *entorno
+      SERVER_PORT: 8082
+    volumes:
+      - taxis-data:/app/data
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+  viajes-service:
+    <<: *app
+    build:
+      context: .
+      args:
+        MODULE: CircuitBreak
+    environment:
+      <<: *entorno
+      SERVER_PORT: 8083
+    volumes:
+      - viajes-data:/app/data
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      clientes-service:
+        condition: service_healthy
+      taxis-service:
+        condition: service_healthy
+  notificaciones-service:
+    <<: *app
+    build:
+      context: .
+      args:
+        MODULE: notificaciones-service
+    environment:
+      <<: *entorno
+      SERVER_PORT: 8084
+    volumes:
+      - notificaciones-data:/app/data
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  rabbit-data:
+  clientes-data:
+  taxis-data:
+  viajes-data:
+  notificaciones-data:

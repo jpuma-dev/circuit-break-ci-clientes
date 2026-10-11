@@ -1,0 +1,36 @@
+name: CI - Listado de clientes
+
+on:
+  push:
+    paths:
+      - 'services/clientes-service/**'
+      - '.mvn/**'
+      - 'mvnw'
+      - 'mvnw.cmd'
+      - '.github/workflows/ci-clientes.yml'
+      - '.github/workflows/reusable-java-ci.yml'
+  pull_request:
+    paths:
+      - 'services/clientes-service/**'
+      - '.mvn/**'
+      - 'mvnw'
+      - 'mvnw.cmd'
+      - '.github/workflows/ci-clientes.yml'
+      - '.github/workflows/reusable-java-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-clientes-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  clientes:
+    name: CI Clientes
+    uses: ./.github/workflows/reusable-java-ci.yml
+    with:
+      service_name: clientes-service
+      service_path: services/clientes-service
+      java_version: '21'
