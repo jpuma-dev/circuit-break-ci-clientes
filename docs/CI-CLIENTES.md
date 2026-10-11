@@ -11,7 +11,7 @@ usa `-f services/clientes-service/pom.xml` en lugar de construir todos los módu
 ## Activación
 
 - Push en cualquier rama con cambios en `services/clientes-service/**`.
-- Pull request abierto, actualizado o reabierto con cambios en ese módulo.
+- Pull request hacia `main`, abierto, actualizado o reabierto con cambios en ese módulo.
 - También se ejecuta si cambia su workflow, reusable-java-ci.yml o Maven Wrapper (`.mvn/**`,
   `mvnw`, `mvnw.cmd`).
 - Ejecución manual mediante **Actions > CI - Listado de clientes > Run workflow**,
@@ -26,10 +26,9 @@ el filtro considera el conjunto de archivos cambiados respecto de la rama base.
 2. Configuración de Temurin Java 21 y caché de dependencias Maven.
 3. Maven Wrapper descarga y usa Maven 3.9.12, según la configuración existente.
 4. `clean compile`: valida y compila el código de clientes.
-5. `test`: ejecuta JUnit y falla si no encuentra pruebas.
-6. `verify`: repite las pruebas como parte del ciclo Maven, empaqueta y verifica
-   el JAR Spring Boot. La repetición permite usar el ciclo completo sin omitir tests.
-7. Guarda informes Surefire, incluso si fallan las pruebas, y el JAR solamente
+5. `verify`: ejecuta JUnit una sola vez, falla si no encuentra pruebas, empaqueta
+   y verifica el JAR Spring Boot.
+6. Guarda informes Surefire, incluso si fallan las pruebas, y el JAR solamente
    cuando la verificación es exitosa. Los artefactos se conservan 14 días.
 
 Un error detiene las etapas dependientes y marca el job en rojo. No hay despliegue.
@@ -55,8 +54,8 @@ la raíz del repositorio. No subas la carpeta contenedora `Circuit-Break-CI-Nexo
 como un nivel adicional: GitHub busca workflows en `.github/workflows`
 de la raíz. No subas `target/`, `data/` ni credenciales.
 
-1. Crea un repositorio GitHub llamado `circuit-break-ci-clientes`, preferiblemente
-   privado, y sube el contenido de esta carpeta conservando los archivos ocultos.
+1. Crea un repositorio GitHub público llamado `circuit-break-ci-clientes`, conforme
+   al alcance solicitado, y sube el contenido conservando los archivos ocultos.
 2. En **Actions**, abre **CI - Listado de clientes** y selecciona la ejecución
    correspondiente al commit.
 3. Abre **Compilar, probar y validar clientes** y revisa cada etapa.

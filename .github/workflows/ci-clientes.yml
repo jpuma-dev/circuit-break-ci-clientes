@@ -10,6 +10,7 @@ on:
       - '.github/workflows/ci-clientes.yml'
       - '.github/workflows/reusable-java-ci.yml'
   pull_request:
+    branches: [ main ]
     paths:
       - 'services/clientes-service/**'
       - '.mvn/**'

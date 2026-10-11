@@ -38,9 +38,7 @@ jobs:
         run: sh ./mvnw --version
       - name: Compilar clientes
         run: sh ./mvnw -B -ntp -f ${{ inputs.service_path }}/pom.xml clean compile
-      - name: Ejecutar pruebas de clientes y listado
-        run: sh ./mvnw -B -ntp -f ${{ inputs.service_path }}/pom.xml -DfailIfNoTests=true test
-      - name: Validar y empaquetar clientes
+      - name: Ejecutar pruebas, validar y empaquetar clientes
         run: sh ./mvnw -B -ntp -f ${{ inputs.service_path }}/pom.xml -DfailIfNoTests=true verify
       - name: Guardar resultados de pruebas
         if: always()
